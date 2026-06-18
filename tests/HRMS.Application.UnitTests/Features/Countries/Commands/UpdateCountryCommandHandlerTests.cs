@@ -22,7 +22,7 @@ public class UpdateCountryCommandHandlerTests
     public async Task Handle_ShouldReturnNotFound_WhenCountryDoesNotExist()
     {
         // Arrange
-        var command = new UpdateCountryCommand(Guid.NewGuid(), "United States", "US", "+1", null);
+        var command = new UpdateCountryCommand(Guid.NewGuid(), "United States", "US", "+1", []);
         _countryRepositoryMock.GetByIdAsync(command.Id, Arg.Any<CancellationToken>()).Returns((Country?)null);
 
         // Act
@@ -35,15 +35,16 @@ public class UpdateCountryCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnConcurrencyConflict_WhenStampDoesNotMatch()
+    public async Task Handle_ShouldReturnConcurrencyConflict_WhenRowVersionDoesNotMatch()
     {
         // Arrange
         var tenantId = Guid.NewGuid();
         var country = Country.Create(tenantId, "Old Name", "UK", "+44");
-        // Simulate a past update
+        // Simulate a past update to change RowVersion
         country.Update("Old Name 2", "UK", "+44"); 
 
-        var command = new UpdateCountryCommand(country.Id, "United Kingdom", "UK", "+44", DateTime.UtcNow.AddMinutes(-10));
+        var staleRowVersion = new byte[] { 0, 0, 0, 1 }; // Different from current RowVersion
+        var command = new UpdateCountryCommand(country.Id, "United Kingdom", "UK", "+44", staleRowVersion);
         
         _countryRepositoryMock.GetByIdAsync(command.Id, Arg.Any<CancellationToken>()).Returns(country);
 
@@ -57,13 +58,13 @@ public class UpdateCountryCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldUpdateCountry_WhenValidAndConcurrencyMatches()
+    public async Task Handle_ShouldUpdateCountry_WhenValidAndRowVersionMatches()
     {
         // Arrange
         var tenantId = Guid.NewGuid();
         var country = Country.Create(tenantId, "Old Name", "UK", "+44");
         
-        var command = new UpdateCountryCommand(country.Id, "United Kingdom", "UK", "+44", country.UpdatedAt);
+        var command = new UpdateCountryCommand(country.Id, "United Kingdom", "UK", "+44", country.RowVersion);
         
         _countryRepositoryMock.GetByIdAsync(command.Id, Arg.Any<CancellationToken>()).Returns(country);
 
