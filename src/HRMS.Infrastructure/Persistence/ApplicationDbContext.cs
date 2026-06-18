@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Linq.Expressions;
 using HRMS.Application.Common.Interfaces;
 using HRMS.Domain.Common;
 using HRMS.Domain.Entities;
@@ -20,23 +21,33 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
 
     public DbSet<Country> Countries => Set<Country>();
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-            var connectionString = _currentTenantService.ConnectionString;
-            if (!string.IsNullOrEmpty(connectionString))
-            {
-                optionsBuilder.UseSqlServer(connectionString);
-            }
-        }
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
+        // Apply tenant filter to all BaseEntity<T> types
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (typeof(BaseEntity<Guid>).IsAssignableFrom(entityType.ClrType))
+            {
+                modelBuilder.Entity(entityType.ClrType)
+                    .HasQueryFilter(CreateTenantFilterExpression(entityType.ClrType));
+            }
+        }
+
         base.OnModelCreating(modelBuilder);
+    }
+
+    private LambdaExpression CreateTenantFilterExpression(Type entityType)
+    {
+        var parameter = Expression.Parameter(entityType, "e");
+        var tenantIdProperty = Expression.Property(parameter, "TenantId");
+        var currentTenantId = Expression.Call(
+            Expression.Constant(_currentTenantService),
+            typeof(ICurrentTenantService).GetMethod("GetCurrentTenantId")!
+        );
+        var body = Expression.Equal(tenantIdProperty, currentTenantId);
+        return Expression.Lambda(body, parameter);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

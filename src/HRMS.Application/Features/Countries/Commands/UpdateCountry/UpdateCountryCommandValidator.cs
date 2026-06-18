@@ -21,5 +21,8 @@ public sealed class UpdateCountryCommandValidator : AbstractValidator<UpdateCoun
         RuleFor(x => x.PhoneCode)
             .NotEmpty().WithErrorCode("PHONE_CODE_REQUIRED")
             .MaximumLength(10).WithErrorCode("PHONE_CODE_TOO_LONG");
+
+        RuleFor(x => x.RowVersion)
+            .NotNull().WithErrorCode("ROW_VERSION_REQUIRED");
     }
 }

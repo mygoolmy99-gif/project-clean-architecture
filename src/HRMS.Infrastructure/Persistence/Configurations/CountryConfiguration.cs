@@ -34,7 +34,5 @@ public sealed class CountryConfiguration : IEntityTypeConfiguration<Country>
 
         builder.HasIndex(c => new { c.TenantId, c.CountryCode }).IsUnique();
         builder.HasIndex(c => new { c.TenantId, c.IsActive });
-        
-        builder.HasQueryFilter(e => e.TenantId == EF.Property<Guid>(e, "TenantId"));
     }
 }
