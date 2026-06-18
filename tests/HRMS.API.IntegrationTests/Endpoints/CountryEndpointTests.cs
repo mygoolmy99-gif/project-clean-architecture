@@ -90,7 +90,11 @@ public class CountryEndpointTests : IntegrationTestBase
         var createResponse = await PostAsJsonAsync("/api/countries", new CreateCountryCommand("Japan", "JP", "+81"));
         var id = (await createResponse.Content.ReadFromJsonAsync<ApiResponse<Guid>>())!.Data;
 
-        var updateCommand = new UpdateCountryCommand(id, "Japan Updated", "JP", "+81", null);
+        // Get the country to retrieve its RowVersion
+        var getResponse = await GetAsync<CountryDto>($"/api/countries/{id}");
+        var rowVersion = getResponse.Data!.RowVersion;
+
+        var updateCommand = new UpdateCountryCommand(id, "Japan Updated", "JP", "+81", rowVersion);
         var response = await PutAsJsonAsync($"/api/countries/{id}", updateCommand);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);

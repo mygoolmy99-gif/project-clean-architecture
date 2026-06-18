@@ -10,4 +10,5 @@ public sealed record CountryDto(
     string PhoneCode,
     bool IsActive,
     DateTime CreatedAt,
-    DateTime? UpdatedAt);
+    DateTime? UpdatedAt,
+    byte[] RowVersion);

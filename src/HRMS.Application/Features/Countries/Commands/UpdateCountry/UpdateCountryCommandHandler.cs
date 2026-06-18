@@ -17,7 +17,7 @@ public sealed class UpdateCountryCommandHandler(
             return Result<Guid>.NotFound($"Country with ID '{request.Id}' was not found.");
         }
 
-        if (request.ConcurrencyStamp.HasValue && request.ConcurrencyStamp != country.UpdatedAt)
+        if (request.RowVersion != null && !request.RowVersion.SequenceEqual(country.RowVersion))
         {
             return Result<Guid>.Failure(new Error("CONCURRENCY_CONFLICT", "The country has been modified by another user."));
         }
