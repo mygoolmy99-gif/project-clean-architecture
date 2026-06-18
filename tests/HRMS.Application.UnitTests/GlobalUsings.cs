@@ -1,0 +1,9 @@
+global using Xunit;
+global using FluentAssertions;
+global using NSubstitute;
+global using HRMS.Application.Common;
+global using HRMS.Application.Common.Interfaces;
+global using HRMS.Application.DTOs;
+global using HRMS.Domain.Entities;
+global using HRMS.Domain.Repositories;
+global using HRMS.Domain.ValueObjects;
