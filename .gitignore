@@ -1,41 +1,44 @@
 ```
-# Build artifacts
-bin/
-obj/
-*.dll
+# Compiled and build artifacts
+*.o
+*.obj
 *.exe
-*.pdb
-*.nupkg
-*.snupkg
+*.dll
+*.so
+*.a
+*.out
+*.pyc
+__pycache__/
 
 # Dependencies
-packages/
 node_modules/
-
-# Test results and coverage
-TestResults/
-coverage/
-*.coverage
-
-# Environment specific
+venv/
+.venv/
 .env
 .env.local
-*.userprefs
-*.userosscache
-*.suo
-*.user
+*.env.*
 
-# OS generated files
+# Build directories (common in .NET projects)
+bin/
+obj/
+Debug/
+Release/
+.vs/
+.vscode/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# OS specific
 .DS_Store
 Thumbs.db
-desktop.ini
 
-# IDE files
-.vs/
-.idea/
-*.swp
-*.swo
-
-# Logs
-*.log
+# Testing and coverage
+coverage/
+htmlcov/
+.coverage
+.nyc_output/
+.junit/
 ```
